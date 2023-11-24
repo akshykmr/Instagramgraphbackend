@@ -23,7 +23,7 @@ router.get(
 
 router.get('/success', fetchFacebookPage , pageWithInstaAccount, (req,res)=>{
   try{
-    // const facebookPageData = res.locals.facebookPageData;
+    // const facebookPageData() = res.locals.facebookPageData;
     // const previousResponse = res.locals.response;
     // console.log('Response:',previousResponse)
     res.end();
