@@ -26,33 +26,28 @@ const pageWithInstaAccount = async (req, res, next) => {
   try {
     const fbPageObject = res.locals.response.data;
     const promises = res.locals.response.data.accounts.data.map(
-      
       async (pageData) => {
-
         const existingPage = await FaceBookPage.findOne({
           fetched_fb_page_Id: pageData.id,
         });
-
         if (existingPage) {
-
           // if page exist
           if (pageData.connected_instagram_account) {
             // if instaId is present in req
-            if (existingPage.fetched_connected_insta_user_Id) {
+            if (existingPage.connected_insta_userId_of_db) {
               // if instaId present in db
               if (
-                pageData.connected_instagram_account.id ===
-                (existingPage.fetched_connected_insta_user_Id)
+                pageData.connected_instagram_account ===
+                (await decryption(existingPage.fetched_connected_insta_user_Id))
               ) {
                 // if both id is same
-                // await fetchInstaMedia(
-                //   // fetching instaMedia
-                //   existingPage.fetched_fb_user_Id,
-                //   existingPage.fetched_fb_page_Id,
-                //   pageData.connected_instagram_account.id,
-                //   existingPage.id // this is the pageId created in db for ref
-                // );
-                console.log('both instaId is same')
+                await fetchInstaMedia(
+                  // fetching instaMedia
+                  existingPage.fetched_fb_user_Id,
+                  existingPage.fetched_fb_page_Id,
+                  pageData.connected_instagram_account.id,
+                  existingPage.id // this is the pageId created in db for ref
+                );
               } else {
                 // if instaUser in req do not match with existing instauser
                 const isInstaUserExist = await InstaUser.findOne({
@@ -71,42 +66,43 @@ const pageWithInstaAccount = async (req, res, next) => {
                   );
                 }
                 // if InstaId is changed in req
-                existingPage.fetched_connected_insta_user_Id = pageData.connected_instagram_account.id // insta id is updated in db
+                existingPage.fetched_connected_insta_user_Id = await encryption(
+                  pageData.connected_instagram_account.id
+                ); // insta id is updated in db
                 existingPage.status = "Active"; // page is set to Active Mode
                 existingPage.connected_insta_userId_of_db = ""; // removing mongoose InstaUser id to release the instaUser
                 await existingPage.save();
-                // await fetchInstaMedia(
-                //   // fetching instaMedia
-                //   existingPage.fetched_fb_user_Id,
-                //   existingPage.fetched_fb_page_Id,
-                //   pageData.connected_instagram_account.id,
-                //   existingPage.id // this is the pageId created in db for ref
-                // );
+                await fetchInstaMedia(
+                  // fetching instaMedia
+                  existingPage.fetched_fb_user_Id,
+                  existingPage.fetched_fb_page_Id,
+                  pageData.connected_instagram_account.id,
+                  existingPage.id // this is the pageId created in db for ref
+                );
                 console.log(
                   existingPage.name,
-                  " : Insta Id is updated with new instaId in pageDb"
+                  " : Insta Id is updated with new one in pageDb"
                 );
               }
             } else {
               // if insta Id is not present in db
-              existingPage.fetched_connected_insta_user_Id = pageData.connected_instagram_account.id // new insta id is added in db
+              existingPage.fetched_connected_insta_user_Id = await encryption(
+                pageData.connected_instagram_account.id
+              ); // new insta id is added in db
               existingPage.status = "Active"; // page is set to Active Mode
               await existingPage.save();
-              // await fetchInstaMedia(
+              await fetchInstaMedia(
                 // fetching instaMedia
-              //   existingPage.fetched_fb_user_Id,
-              //   existingPage.fetched_fb_page_Id,
-              //   pageData.connected_instagram_account.id,
-              //   existingPage.id // this is the pageId created in db for ref
-              // );
+                existingPage.fetched_fb_user_Id,
+                existingPage.fetched_fb_page_Id,
+                pageData.connected_instagram_account.id,
+                existingPage.id // this is the pageId created in db for ref
+              );
               console.log("new Insta Id is added in pageDb");
             }
           } else {
-            console.log('insta id not present in req')
             // if instaId is not present in req
             if (existingPage.fetched_connected_insta_user_Id) {
-            console.log('fetched_connected_insta_user_Id')
-
               //if instaId is present in db
 
               const isInstaUserExist = await InstaUser.findOne({
@@ -122,16 +118,14 @@ const pageWithInstaAccount = async (req, res, next) => {
               }
               existingPage.fetched_connected_insta_user_Id = ""; // removing instaIdfrom db as not found in db
               existingPage.status = "Page_not_exist_in_facebook"; // page is set to Active Mode
-              // existingPage.connected_insta_userId_of_db = ""; // removing instaIdfrom db as not found in db
+              existingPage.connected_insta_userId_of_db = ""; // removing instaIdfrom db as not found in db
 
               await existingPage.save();
               console.log("Insta Id is removed from pageDb");
             }
           }
-        } else { // if page does not exist in database
-
-          if (pageData.connected_instagram_account) { // page with instagram account are filtered
-            const currentDate = new Date(); 
+        } else {
+          if (pageData.connected_instagram_account) {
             const page = new FaceBookPage({
               // user_Id_of_db:"",
               name: pageData.name,
@@ -140,26 +134,19 @@ const pageWithInstaAccount = async (req, res, next) => {
               fetched_fb_user_Id: await encryption(fbPageObject.id),
               fetched_fb_page_Id: pageData.id,
 
-              // fetched_connected_insta_user_Id: await encryption(
-              //   pageData.connected_instagram_account.id
-              // ),
-              fetched_connected_insta_user_Id: pageData.connected_instagram_account.id,
+              fetched_connected_insta_user_Id: await encryption(
+                pageData.connected_instagram_account.id
+              ),
               status: "Active",
-              
             });
-            page.fetched_connected_insta_users_history.push({instaUser :pageData.connected_instagram_account.id,updatedOn:currentDate});
-            
             const response = await page.save();
             console.log("Page Added Successfully", response);
-            // await fetchInstaMedia(
-            //   response.fb_user_Id,
-            //   response.fb_page_Id,
-            //   pageData.connected_instagram_account.id,
-            //   response.id // this is the pageId created in db for ref
-            // );
-          }
-          else {
-            console.log('Please Connect Your Instagram Account with Page: ', pageData)
+            await fetchInstaMedia(
+              response.fb_user_Id,
+              response.fb_page_Id,
+              pageData.connected_instagram_account.id,
+              response.id // this is the pageId created in db for ref
+            );
           }
         }
       }

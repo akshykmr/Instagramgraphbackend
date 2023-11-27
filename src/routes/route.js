@@ -10,7 +10,7 @@ const router = express.Router();
 
 
 
-router.get('/login', passport.authenticate('facebook', { scope: ['email', 'instagram_basic','instagram_content']}));
+router.get('/login', passport.authenticate('facebook', { scope: ['email']}));
 
 
 router.get(
