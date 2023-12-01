@@ -1,18 +1,18 @@
 const axios = require("axios");
 require("dotenv").config();
 const InstaUser = require('./../model/instaUserSchema');
+const Media = require('../model/instaVideosSchema')
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
-const accessToken = process.env.ACCESS_TOKEN;
 const baseUrl = process.env.FACEBOOK_BASE_URL;
 
-const fetchInstaMedia = async (fb_user_Id,fb_page_Id, connected_insta_user_Id, connected_fbPage_Id ) => {
+const fetchInstaMedia = async (accessToken, pageIdbyMongo, pageIdbyFacebook, instaUserIdbyFacebook) => {
   try {
     // console.log("FACEBOOK USER ID",fb_user_Id, "FACEBOOK PAGE ID",fb_page_Id, "CONNECTED ISTA USER ID", connected_insta_user_Id, "NEW PAGE ID USER ID", connected_fbPage_Id ,'idssss')
     const fetchInstaProfile = await axios.get(
-      `${baseUrl}/${connected_insta_user_Id}?fields=username,profile_picture_url,media_count,media&access_token=${accessToken}`
+      `${baseUrl}/${instaUserIdbyFacebook}?fields=username,profile_picture_url,media_count,media&access_token=${accessToken}`
     );
     console.log(fetchInstaProfile.data,'instaprofile');
 
@@ -20,28 +20,27 @@ const fetchInstaMedia = async (fb_user_Id,fb_page_Id, connected_insta_user_Id, c
     const existingUser = await InstaUser.findOne({ insta_User_Id: instaProfile.id})
     if(!existingUser){
         const instaUser= new InstaUser({
-            // user_Id:"",
             username: instaProfile.username,
             profile_picture:  instaProfile.profile_picture_url,
             mediaCount :  instaProfile.media_count,
-            media_Ids : [],
-            fb_user_Id: fb_user_Id,
-            connected_fbPage_Id: connected_fbPage_Id,
-            insta_User_Id: instaProfile.id,
+            fetched_media_Ids : [],
+            fetched_insta_User_Id_of_this:instaProfile.id,
+            // relational keys
+            fetched_fb_page_Id : pageIdbyFacebook,
+            connected_fbPage_Id_of_db: pageIdbyMongo,
         });
         for (let i = 0; i < instaProfile.media.data.length; i++) {
-            instaUser.media_Ids.push(instaProfile.media.data[i].id);
+            instaUser.fetched_media_Ids.push(instaProfile.media.data[i].id);
         }
         const response = await instaUser.save();
         console.log(response,'Insta User Added Successfully')
     }
     const promises = fetchInstaProfile.data.media.data.map(async (item) => {
-      const fetchMedia = await axios.get(
+      const fetchedMedia = await axios.get(
         `${baseUrl}/${item.id}?fields=caption,like_count,media_type,media_url,permalink,thumbnail_url,comments{from,text,replies}&access_token=${accessToken}`
       );
-
-      if (fetchMedia.data.media_type === "VIDEO") {
-        console.log(fetchMedia.data, "media");
+      if (fetchedMedia.data.media_type === "VIDEO") {
+        console.log(fetchedMedia.data, "media");
 
         const filePath = path.join(
           __dirname,
@@ -51,13 +50,37 @@ const fetchInstaMedia = async (fb_user_Id,fb_page_Id, connected_insta_user_Id, c
           `${item.id}.mp4`
         );
 
-        // Create the write stream
+        const mediaInDB = await Media.findOne({
+          video_Id : fetchedMedia.data.id
+        });
+
+        if(!mediaInDB){
+          const media = new Media({
+            video_url : fetchedMedia.data.media_url,
+            permalink : fetchedMedia.data.permalink,
+            thumbnail_url : fetchedMedia.data.permalink,
+            video_Id : fetchedMedia.data.id,
+            // posted_by : response.id,
+            // timestamp : fetchedMedia.data,
+            caption : fetchedMedia.data.caption,
+            fetched_insta_user_Id : instaUserIdbyFacebook,
+            like_count : fetchedMedia.data.like_count,
+          });
+          const video = await media.save();
+          console.log('video saved succes');
+          // Create the write stream
         const stream = fs.createWriteStream(filePath);
 
-        https.get(`${fetchMedia.data.media_url}`, function (response) {
+        https.get(`${fetchedMedia.data.media_url}`, function (response) {
           response.pipe(stream);
           console.log("data saved");
         });
+        }
+        else {
+          console.log('video not saved')
+        }
+
+        
       }
     });
     await Promise.all(promises);

@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const routes = require("../routes/route");
+const facebook_Routes = require("../routes/facebook_auth");
+// const routes = require("../routes/route");
 const session = require("express-session");
 const passport = require("passport");
-const FacebookStrategy = require("passport-facebook").Strategy;
 require("dotenv").config();
 const path = require('path');
 
@@ -32,23 +32,7 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser(function (obj, cb) {
   cb(null, obj);
 });
-
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_SECRET_KEY,
-      callbackURL: process.env.FACEBOOK_CALLBACK_URL,
-    },
-    async function (accessToken, refreshToken, profile, cb) {
-   
-      console.log(accessToken, refreshToken, profile, "data");
-
-      return cb(null, profile, accessToken, refreshToken);
-    }
-  )
-);
-
-app.use("/", routes);
+// app.use("/", routes);
+app.use("/", facebook_Routes);
 
 module.exports = app;

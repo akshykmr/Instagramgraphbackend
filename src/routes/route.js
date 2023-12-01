@@ -10,43 +10,44 @@ const router = express.Router();
 
 
 
-router.get('/login', passport.authenticate('facebook', { scope: ['email']}));
+router.get('/loginn', passport.authenticate('facebook', { scope: ['email']}));
 
 
-router.get(
-  '/callback',
-  passport.authenticate('facebook', {
-    successRedirect:'/success',
-    failureRedirect: '/error'
-  }),
-);
+// router.get(
+//   '/callback',
+//   passport.authenticate('facebook', {
+//     successRedirect:'/success',
+//     failureRedirect: '/error'
+//   }),
+// );
 
-router.get('/success', fetchFacebookPage , pageWithInstaAccount, (req,res)=>{
-  try{
-    // const facebookPageData() = res.locals.facebookPageData;
-    // const previousResponse = res.locals.response;
-    // console.log('Response:',previousResponse)
-    res.end();
-  }
-  catch(e){
-    console.log('error with success',e)
-  }
-});
+// // router.get('/success', (req,res)=>{
+// //   try{
+// //     // const facebookPageData() = res.locals.facebookPageData;
+// //     // const previousResponse = res.locals.response;
+// //     // console.log('Response:',previousResponse)
+// //     res.end();
+// //   }
+// //   catch(e){
+// //     console.log('error with success',e)
+// //   }
+// // });
 
 // router.get('/success', async (req, res) => {
-//     console.log('success')
+//   //   console.log('success')
 
 
 
-//   const userInfo = {
-//     id: req.session.passport.user.id,
-//     displayName: req.session.passport.user.displayName,
-//     provider: req.session.passport.user.provider,
-//   };
-//   console.log(userInfo)
-//   res.write('yes')
+//   // const userInfo = {
+//   //   id: req.session.passport.user.id,
+//   //   displayName: req.session.passport.user.displayName,
+//   //   provider: req.session.passport.user.provider,
+//   //   accessToken  : req.session.passport.accessToken
+//   // };
+//   // console.log(req.session,'req.session')
+//   // res.write('yes')
   
-//   res.end();
+//   // res.end();
 
 // //   res.render('fb-github-success', { user: userInfo });
 // });

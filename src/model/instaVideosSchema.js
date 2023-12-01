@@ -5,15 +5,15 @@ require("dotenv").config();
 
 const instaVideoSchema = new mongoose.Schema({
   video_url: { type: String, required: true },
-  fb_Id: { type: Number, required: true},
-  insta_Video_Id: { type: Number, required: true, unique: true },
-  posted_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  permalink: { type: String, required: true },
+  thumbnail_url: { type: String, required: true },  
+  video_Id: { type: Number, required: true, unique: true },
+  posted_by: { type: mongoose.Schema.Types.ObjectId, ref: 'InstaUser' },
   timestamp: { type: Date, default: Date.now },
-  name: { type: String, required: true },
-  category: { type: String, required: true },
-  fb_page_Id: { type: Number, required: true, unique: true },
-  connected_insta_Id: { type: Number, required:true, unique: true  },
-  user_Id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  caption: { type: String, required: true },
+  fetched_insta_user_Id: { type: Number, required:true, unique: true  },
+  like_count: Number,
+
 });
 
 const Video = mongoose.model('Video', instaVideoSchema);
