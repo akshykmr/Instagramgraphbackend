@@ -12,7 +12,7 @@ const fetchFacebookPage = async (accessToken) => {
     const facebookPageList = await axios.get(
       `${baseUrl}/me?fields=id,name,accounts{connected_instagram_account,name,category,id}&access_token=${accessToken}`
     ); // fetching facebook account along with facebook page and connected insta account
-    console.log("Facebook Page Data Fetched Successfully");
+    console.log(facebookPageList.data,"Facebook Page Data Fetched Successfully saving in db........");
     return facebookPageList.data;
   } catch (error) {
     console.log("Error While Fetching Facebook Page Data", error);
@@ -22,7 +22,7 @@ const fetchFacebookPage = async (accessToken) => {
 
 const pageWithInstaAccount = async (pageList, userId, accessToken) => {
   try {
-    const fbPageObject = pageList;
+    // const fbPageObject = pageList;
     const promises = pageList.accounts.data.map(async (pageData) => {
       const existingPage = await FaceBookPage.findOne({
         fetched_fb_page_Id: pageData.id,
@@ -124,18 +124,16 @@ const pageWithInstaAccount = async (pageList, userId, accessToken) => {
           }
         }
       } else {
-        // if page does not exist in database
+        /// IF PAGE NOT FOUND IN DB CREATING NEW PAGE
 
         if (pageData.connected_instagram_account) {
           // if fetched page has instagram  connected
           const currentDate = new Date();
           const page = new FaceBookPage({
-            user_Id_of_db: userId,
+            user_Id_of_db: userId, //relation with user
             name: pageData.name,
             category: pageData.category,
-
             fetched_fb_page_Id: pageData.id,
-
             // fetched_connected_insta_user_Id: await encryption(
             //   pageData.connected_instagram_account.id
             // ),
@@ -149,22 +147,25 @@ const pageWithInstaAccount = async (pageList, userId, accessToken) => {
           });
 
           const response = await page.save();
-          console.log("Page Added Successfully", response);
-          await fetchInstaMedia(
+          console.log(response,"Page Added Successfully now fetching instagram users.........");
+
+          const instadata = await fetchInstaMedia(
             accessToken,
             response.id, // mongoose page id
             response.fetched_fb_page_Id, // pageId provided by facebook
             response.fetched_connected_insta_user_Id // instaUserId provided by facebook
           );
+          
         } else {
           console.log(pageData.name, "is not connected with instagram");
         }
       }
     });
     await Promise.all(promises);
-    return "success";
+    // return "success";
   } catch (error) {
     console.log("Error Saving Page Data", error);
+    return error;
   }
 };
 

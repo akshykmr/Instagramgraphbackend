@@ -1,58 +1,48 @@
-const passport = require('passport');
-const express = require('express');
-const axios = require('axios');
-const {fetchFacebookPage} = require('./../service/fetchFacebookPage')
-const {pageWithInstaAccount} = require('./../service/fetchFacebookPage')
-const {fetchInstaMedia} = require('./../service/fetchInstaMedia');
-
+const passport = require("passport");
+const express = require("express");
+const scope = require("./../requirements/data.json");
+const successController = require("../controllers/successController");
+const controller = require("../controllers/otherController");
 
 const router = express.Router();
 
+//FACEBOOK AUTH ROUTES
+router.get("/auth/facebook", passport.authenticate("facebook", { scope: scope.facebookAuthScope }));
 
 
-router.get('/loginn', passport.authenticate('facebook', { scope: ['email']}));
+router.get(
+  "/auth/facebook/callback",
+  passport.authenticate("facebook", {
+    successRedirect: "/auth/facebook/success",
+    failureRedirect: "/error",
+  })
+);
+
+router.get("/auth/facebook/success", successController.sendDataAfterFBLogin);
 
 
+///INSTAGRAM AUTH ROUTES
 // router.get(
-//   '/callback',
-//   passport.authenticate('facebook', {
-//     successRedirect:'/success',
-//     failureRedirect: '/error'
-//   }),
+//   "/auth/instagram",
+//   passport.authenticate("instagram", { scope: scope.instaAuthScope })
 // );
 
-// // router.get('/success', (req,res)=>{
-// //   try{
-// //     // const facebookPageData() = res.locals.facebookPageData;
-// //     // const previousResponse = res.locals.response;
-// //     // console.log('Response:',previousResponse)
-// //     res.end();
-// //   }
-// //   catch(e){
-// //     console.log('error with success',e)
-// //   }
-// // });
+// router.get(
+//   "/auth/instagram/callback",
+//   passport.authenticate("instagram", {
+//     successRedirect: "/auth/instagram/success",
+//     failureRedirect: "/error",
+//   })
+// );
 
-// router.get('/success', async (req, res) => {
-//   //   console.log('success')
+// router.get("/auth/instagram/success",controller.facebooSuccess);
 
-
-
-//   // const userInfo = {
-//   //   id: req.session.passport.user.id,
-//   //   displayName: req.session.passport.user.displayName,
-//   //   provider: req.session.passport.user.provider,
-//   //   accessToken  : req.session.passport.accessToken
-//   // };
-//   // console.log(req.session,'req.session')
-//   // res.write('yes')
   
-//   // res.end();
 
-// //   res.render('fb-github-success', { user: userInfo });
-// });
+// OTHER ROUTES
 
+router.get("/logout", controller.logout);
 
-router.get('/error', (req, res) => res.send('Error logging in via Facebook..'));
+router.get("/error", controller.error);
 
 module.exports = router;

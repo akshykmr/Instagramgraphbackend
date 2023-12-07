@@ -2,76 +2,95 @@ const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const express = require("express");
 const User = require("../model/userSchema");
-const {fetchFacebookPage, pageWithInstaAccount} = require('../service/fetchFacebookPage')
+const {
+  fetchFacebookPage,
+  pageWithInstaAccount,
+} = require("../service/fetchFacebookPage");
+const generateJWT = require("../service/genJWTToken");
+const FacebookPage = require("../model/faceBookPageSchema");
+const InstaUser = require("../model/instaUserSchema");
+const Video = require("../model/instaVideosSchema");
 
 const router = express.Router();
 require("dotenv").config();
 
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_SECRET_KEY,
-      callbackURL: process.env.FACEBOOK_CALLBACK_URL,
-      profileFields: ["id", "displayName", "photos", "email"],
-    },
-    async function (accessToken, refreshToken, profile, cb) {
-      const isUserExist = await  User.findOne({ fetched_fb_user_Id: profile.id });
 
-      if (!isUserExist) {
-        const user = new User({
-          name: profile._json.name,
-          email: profile._json.email,
-          fetched_fb_user_Id: profile._json.id,
-          access_token:accessToken
-        });
-        const response = await user.save();
-        console.log( "User Added Succefully, Now fetching facebookpage.............");
-
-        const pageList = await fetchFacebookPage(response.access_token);
-
-        const savePageInDB= await pageWithInstaAccount(pageList, response.id, response.access_token);
-
-        console.log(savePageInDB,'saving page data')
-        return cb(null, response);
-      } else {
-
-        console.log(isUserExist,"Log in success");
-        const pageList = await fetchFacebookPage(isUserExist.access_token);
-        const savePageInDB= await pageWithInstaAccount(pageList, isUserExist.id, isUserExist.access_token);
-        return cb(null, isUserExist, accessToken);
-      }
-      
-    }
-  )
-);
 
 router.get("/login", passport.authenticate("facebook", { scope: ["email"] }));
 
 router.get(
   "/callback",
   passport.authenticate("facebook", {
-    successRedirect: "/success",
+    successRedirect:
+      "/successs",
     failureRedirect: "/error",
   })
 );
+router.get("/successs", (req, res) => res.send("login"));
 
 router.get("/success", async (req, res) => {
-  console.log("success");
+  try {
+    if (req.user) {
+      const facebookPages = await FacebookPage.find({ user_Id_of_db: req.user._id });
 
+      const responseData = [];
+      
+      for (const page of facebookPages) {
+        const instaUser = await InstaUser.findOne({
+          connected_fbPage_Id_of_db: page._id,
+        });
 
+        if (instaUser) {
+          const media = await Video.find({
+            posted_by: instaUser._id,
+          });
 
-  // const userInfo = {
-  //   id: req.session.passport.user.id,
-  //   displayName: req.session.passport.user.displayName,
-  //   provider: req.session.passport.user.provider,
-  //   accessToken: req.session.passport.accessToken,
-  // };
-  // console.log(req.session, "req.session");
-  res.write("yes");
+          responseData.push({
+            page: {
+              id: page._id,
+              name: page.name,
+              category:page.category
+              // Add other page details as needed
+            },
+            instaUser: {
+              id: instaUser._id,
+              username: instaUser.username,
+              biography: instaUser.biography,
+              profile_picture: instaUser.profile_picture,
+              followers_count: instaUser.followers_count,
+              follows_count: instaUser.follows_count,
+              media_count: instaUser.media_count,
+              // Add other instaUser details as needed
+            },
+            media: media,
+          });
+        }
+      }
 
-  res.end();
+      res.status(200).json({
+        success: true,
+        message: "Successful",
+        user: req.user,
+        cookies: req.cookies,
+        data: responseData,
+      });
+    } else {
+      console.log('User not found');
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error in /success route:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
 });
+
+
 
 router.get("/error", (req, res) => res.send("Error logging in via Facebook.."));
 
@@ -80,7 +99,7 @@ router.get("/signout", (req, res) => {
     req.session.destroy(function (err) {
       console.log("session destroyed.");
     });
-    res.render("auth");
+    res.send("logout")
   } catch (err) {
     res.status(400).send({ message: "Failed to sign out fb user" });
   }

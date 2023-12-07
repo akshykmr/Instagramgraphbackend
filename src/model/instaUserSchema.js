@@ -3,8 +3,11 @@ require("dotenv").config();
 
 const instaUserSchema = new mongoose.Schema({
   username: { type: String, required: true },
+  biography: { type: String, required: false },
   profile_picture: { type: String, required: false },
-  mediaCount: { type: Number, required: false },
+  followers_count: { type: Number, required: false },
+  follows_count: { type: Number, required: false },
+  media_count: { type: Number, required: false },
   fetched_media_Ids: [{ type: String, required: false }],
   fetched_insta_User_Id_of_this: { type: String, required: false, unique: true },
 
