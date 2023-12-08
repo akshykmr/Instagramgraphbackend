@@ -1,12 +1,13 @@
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
+const InstagramStrategy = require("passport-instagram").Strategy;
 const User = require("../model/userSchema");
 const { fetchFacebookPage, pageWithInstaAccount} = require("../service/fetchFacebookPage");
 const generateJWT = require("../service/genJWTToken");
 require("dotenv").config();
 
 
-
+// FACEBOOK STRATEGY
 passport.use(
     new FacebookStrategy(
       {
@@ -48,22 +49,36 @@ passport.use(
         //   const token = generateJWT(response.id);
           return cb(null, response);
 
-          
+
 
         } else {  // IF USER EXIST IN DB
 
-            console.log(isUserExist,'user exist FETCHING FB PAGE.....')
+            console.log(isUserExist,'user exist fetching user data.....')
 
-          const pageList = await fetchFacebookPage(isUserExist.access_token);
+        //   const pageList = await fetchFacebookPage(isUserExist.access_token);
    
           // const token = generateJWT(isUserExist.id);
           // console.log(token,'jwt token')
 
   
-          const savePageInDB= await pageWithInstaAccount(pageList, isUserExist.id, isUserExist.access_token);
+        //   const savePageInDB= await pageWithInstaAccount(pageList, isUserExist.id, isUserExist.access_token);
   
           return cb(null, isUserExist);
         }
       }
     )
   );
+
+
+// INSTAGRAM STRATEGY
+  passport.use(new InstagramStrategy({
+    clientID: process.env.INSTAGRAM_CLIENT_ID,
+    clientSecret: process.env.INSTAGRAM_CLIENT_SECRET,
+    callbackURL: process.env.INSTAGRAM_CALLBACK_URL
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    console.log('user loged in with insta')
+    return cb(null, profile);
+  }
+));
+

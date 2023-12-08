@@ -21,28 +21,33 @@ router.get(
 router.get("/auth/facebook/success", successController.sendDataAfterFBLogin);
 
 
-///INSTAGRAM AUTH ROUTES
-// router.get(
-//   "/auth/instagram",
-//   passport.authenticate("instagram", { scope: scope.instaAuthScope })
-// );
+// /INSTAGRAM AUTH ROUTES
+router.get('/auth/instagram',
+passport.authenticate('instagram'));
 
-// router.get(
-//   "/auth/instagram/callback",
-//   passport.authenticate("instagram", {
-//     successRedirect: "/auth/instagram/success",
-//     failureRedirect: "/error",
-//   })
-// );
+router.get(
+  "/auth/instagram/callback",
+  passport.authenticate("instagram", {
+    successRedirect: "/auth/instagram/success",
+    failureRedirect: "/error",
+  })
+);
 
-// router.get("/auth/instagram/success",controller.facebooSuccess);
+router.get("/auth/instagram/success",successController.testingSendData);
 
   
 
 // OTHER ROUTES
 
-router.get("/logout", controller.logout);
+router.get("/auth/facebook/logout", controller.fbLogout);
+router.get("/auth/instagram/logout", controller.innstLogout);
 
 router.get("/error", controller.error);
 
 module.exports = router;
+
+
+
+router.get("/instagram", controller.loginWithInsta);
+
+router.post("/success", controller.loginAndHandleCallback);

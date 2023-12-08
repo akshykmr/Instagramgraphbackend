@@ -7,7 +7,7 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const path = require('path');
-const fbstrategy = require("../controllers/facebookAuthController");
+const strategy = require("../controllers/strategy");
 
 const app = express();
 
@@ -35,7 +35,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://main--graphapi.netlify.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })

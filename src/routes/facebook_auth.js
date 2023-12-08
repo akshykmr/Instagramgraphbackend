@@ -15,7 +15,6 @@ const router = express.Router();
 require("dotenv").config();
 
 
-
 router.get("/login", passport.authenticate("facebook", { scope: ["email"] }));
 
 router.get(
