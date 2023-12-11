@@ -1,7 +1,6 @@
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const express = require("express");
-const User = require("../model/userSchema");
 const {
   fetchFacebookPage,
   pageWithInstaAccount,

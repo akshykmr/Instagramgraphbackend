@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 // const facebookRoutes = require("../routes/facebook_auth");
 const route = require("../routes/route");
@@ -6,7 +7,7 @@ const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
-const path = require('path');
+const path = require("path");
 const strategy = require("../controllers/strategy");
 
 const app = express();
@@ -28,14 +29,14 @@ app.use(
 
 app.use(express.json());
 
-app.use('/videos', express.static(path.join(__dirname, '..', '..', 'videos')));
+app.use("/videos", express.static(path.join(__dirname, "..", "..", "videos")));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(
   cors({
-    origin: "https://main--graphapi.netlify.app",
+    origin: ["http://localhost:3000", process.env.CORS_ORIGIN],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -52,6 +53,5 @@ passport.deserializeUser(function (obj, cb) {
 // app.use("/", facebookRoutes);
 
 app.use("/", route);
-
 
 module.exports = app;

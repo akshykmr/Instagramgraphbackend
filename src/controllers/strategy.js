@@ -1,7 +1,7 @@
 const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const InstagramStrategy = require("passport-instagram").Strategy;
-const User = require("../model/userSchema");
+const FbUser = require("../model/fbUserSchema");
 const { fetchFacebookPage, pageWithInstaAccount} = require("../service/fetchFacebookPage");
 const generateJWT = require("../service/genJWTToken");
 require("dotenv").config();
@@ -19,19 +19,19 @@ passport.use(
 
       async function (accessToken, refreshToken, profile, cb) {
 
-        const isUserExist = await User.findOne({
+        const isUserExist = await FbUser.findOne({
           fetched_fb_user_Id: profile.id,
         }); // FINDING USER IN DB
   
         if (!isUserExist) { // IF USER IN NOT PRESENT IN DB
-          const user = new User({
+          const fbuser = new FbUser({
             name: profile._json.name,
             email: profile._json.email,
             fetched_fb_user_Id: profile._json.id,
             access_token: accessToken,
           });
 
-          const response = await user.save(); // SAVING USER IN DB
+          const response = await fbuser.save(); // SAVING USER IN DB
 
           console.log(response,
             "User Added Succefully, Now fetching facebookpage............."

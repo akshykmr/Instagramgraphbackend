@@ -5,9 +5,17 @@ const OAUTH_URL = process.env.INSTAGRAM_OAUTH_URL;
 
 const GRAPH_URL = process.env.INSTAGRAM_GRAPH_URL;
 
+const verifyUserForInsta = async (req, res) => {
+  res.json({
+    success: true,
+    message: "Token Valid",
+  });
+};
+
+
 const loginWithInsta = async (req, res) => {
   res.redirect(
-    `${OAUTH_URL}authorize?client_id=${process.env.INSTAGRAM_CLIENT_ID}&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URL}&scope=user_profile,user_media&response_type=code`
+    `${OAUTH_URL}authorize?client_id=${process.env.INSTAGRAM_CLIENT_ID}&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URL}&scope=user_profile,use r_media&response_type=code`
   );
 };
 
@@ -37,6 +45,9 @@ const innstLogout = async (req, res) => {
   }
 };
 
+
+
+// GETTING INSTA ACCESS TOKEN FROM FRONTEND
 const loginAndHandleCallback = async (req, res) => {
   exchangeCodeForToken(req.body.code);
   res.send("ok");
@@ -61,7 +72,7 @@ const exchangeCodeForToken = async (code) => {
         },
       }
     );
-    console.log(response.data, "response after success");
+    console.log(response.data, "User Data : in response : ");
 
     const UserProfile =  await axios.get(
       `${GRAPH_URL}${response.data.user_id}?fields=username,profile_picture_url,followers_count,follows_count,media_count,biography,media&access_token=${response.data.access_token}`
@@ -83,4 +94,5 @@ module.exports = {
   error,
   fbLogout,
   innstLogout,
+  verifyUserForInsta
 };
