@@ -4,7 +4,7 @@ const express = require("express");
 const {
   fetchFacebookPage,
   pageWithInstaAccount,
-} = require("../service/fetchFacebookPage");
+} = require("../service/facebook/fetchFacebookPage");
 const generateJWT = require("../service/genJWTToken");
 const FacebookPage = require("../model/faceBookPageSchema");
 const InstaUser = require("../model/instaUserSchema");

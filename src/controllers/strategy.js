@@ -2,7 +2,7 @@ const passport = require("passport");
 const FacebookStrategy = require("passport-facebook").Strategy;
 const InstagramStrategy = require("passport-instagram").Strategy;
 const FbUser = require("../model/fbUserSchema");
-const { fetchFacebookPage, pageWithInstaAccount} = require("../service/fetchFacebookPage");
+const { fetchFacebookPage, pageWithInstaAccount} = require("../service/facebook/fetchFacebookPage");
 const generateJWT = require("../service/genJWTToken");
 require("dotenv").config();
 

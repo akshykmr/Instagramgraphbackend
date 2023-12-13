@@ -10,6 +10,8 @@ const registerUser = async (req, res) => {
   try {
     const { email, mobileNo } = req.body;
 
+    console.log(req.body,'req body')
+
     const existingUserWithEmail = await User.findOne({ email });
     const existingUserWithMobile = await User.findOne({ mobileNo });
 
@@ -33,11 +35,10 @@ const registerUser = async (req, res) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = new User({
-        username: req.body.username,
+        name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
         mobileNo: req.body.mobileNo,
-        bio: req.body.bio,
         UserStatus: "Active",
       });
 
@@ -83,11 +84,17 @@ const loginUser = async (req, res) => {
 
       if (isPasswordValid) {
         const token = await generateJWT(existingUser.id);
+
+        // Check if InstaUser is present
+        const instaUserPresent = existingUser.insta_user.connected_insta_user_Id !== null;
+        
+
         res.json({
           success: true,
           message: "Login Success",
           user: existingUser,
           token: token,
+          instaUserPresent: instaUserPresent, // Additional key indicating if InstaUser is present
         });
       } else {
         res.json({ success: false, message: "Invalid Password" });
@@ -96,9 +103,11 @@ const loginUser = async (req, res) => {
       res.json({ success: false, message: "Invalid UserId" });
     }
   } catch (error) {
-    console.log(error, "error occured");
+    console.log(error, "error occurred");
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 module.exports = {
   registerUser,

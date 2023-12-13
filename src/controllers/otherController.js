@@ -1,6 +1,7 @@
 require("dotenv").config();
 const axios = require("axios");
-
+const User = require("../model/parentUserSchema");
+const fetchInstaUsers = require('../service/instagram/fetchInstaUserAndMedia')
 const OAUTH_URL = process.env.INSTAGRAM_OAUTH_URL;
 
 const GRAPH_URL = process.env.INSTAGRAM_GRAPH_URL;
@@ -15,7 +16,7 @@ const verifyUserForInsta = async (req, res) => {
 
 const loginWithInsta = async (req, res) => {
   res.redirect(
-    `${OAUTH_URL}authorize?client_id=${process.env.INSTAGRAM_CLIENT_ID}&redirect_uri=${process.env.INSTAGRAM_REDIRECT_URL}&scope=user_profile,use r_media&response_type=code`
+    `https://api.instagram.com/oauth/authorize?client_id=260114580407008&redirect_uri=https://main--graphapi.netlify.app/auth/&scope=user_profile,user_media&response_type=code`
   );
 };
 
@@ -49,11 +50,11 @@ const innstLogout = async (req, res) => {
 
 // GETTING INSTA ACCESS TOKEN FROM FRONTEND
 const loginAndHandleCallback = async (req, res) => {
-  exchangeCodeForToken(req.body.code);
+  exchangeCodeForToken(req.body.code, req.user.item);
   res.send("ok");
 };
 
-const exchangeCodeForToken = async (code) => {
+const exchangeCodeForToken = async (code, userId) => {
   try {
 
     const formData = new FormData();
@@ -74,11 +75,22 @@ const exchangeCodeForToken = async (code) => {
     );
     console.log(response.data, "User Data : in response : ");
 
-    const UserProfile =  await axios.get(
-      `${GRAPH_URL}${response.data.user_id}?fields=username,profile_picture_url,followers_count,follows_count,media_count,biography,media&access_token=${response.data.access_token}`
-    );
+    // const getUserProfile =  await axios.get(
+    //   `${GRAPH_URL}${response.data.user_id}?fields=username,profile_picture_url,followers_count,follows_count,media_count,biography,media&access_token=${response.data.access_token}`
+    // );
 
-    console.log(UserProfile, "INSTAUSER");
+  const parentUser = await User.findById(userId);
+
+  console.log(parentUser,userId,'finidng....')
+  
+  await fetchInstaUsers(
+    // fetching instaMedia
+    response.data.access_token,
+    parentUser.id,
+    response.data.user_id
+  );
+
+  //   console.log(getUserProfile, "INSTAUSER");
 
     // Return the access token
     // return response.data.access_token;
