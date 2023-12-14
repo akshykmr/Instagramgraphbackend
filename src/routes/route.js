@@ -10,6 +10,10 @@ const User = require("../model/parentUserSchema");
 
 const router = express.Router();
 
+
+router.get('/',(req, res)=>{
+  res.send('app is ruinning')
+})
 //AUTH FOR LOCAL USER
 router.post("/signup_as_local_user", localAuthController.registerUser);
 router.post("/login_as_local_user", localAuthController.loginUser);
