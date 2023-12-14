@@ -7,22 +7,22 @@ const instaUserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Parent_User_ID_of_DB",
     },
-    fetched_insta_User_Id: { type: String, required: false, unique: true },
+    fetched_insta_User_Id: { type: String,  unique: true },
 
     username: { type: String, required: true },
-    biography: { type: String, required: false },
-    profile_picture: { type: String, required: false },
-    followers_count: { type: Number, required: false },
-    follows_count: { type: Number, required: false },
-    media_count: { type: Number, required: false },
-    fetched_media_Ids: [{ type: String, required: false }],
+    biography: { type: String},
+    profile_picture: { type: String },
+    followers_count: { type: Number  },
+    follows_count: { type: Number},
+    media_count: { type: Number},
+    fetched_media_Ids: [{ type: String,  }],
 
     // RELATIONAL ID'S
-    // fetched_fb_page_Id: { type: String, required: false, unique: true },
+    // fetched_fb_page_Id: { type: String, , unique: true },
     // connected_fbPage_Id_of_db: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "Facebook_Page_In_DB",
-    //   required: false,
+    //   ,
     //   unique: true,
     // },
 

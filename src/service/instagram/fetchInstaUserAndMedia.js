@@ -3,7 +3,6 @@ require("dotenv").config();
 const InstaUser = require("../../model/instaUserSchema");
 const ParentUser = require('../../model/parentUserSchema');
 const Media = require("../../model/instaVideosSchema");
-const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
@@ -17,7 +16,7 @@ const fetchInstaUsers = async (
   try {
   
     const fetchInstaProfile = await axios.get(
-      `${GRAPH_URL}/${fetchedInstaUserId}?fields=username,profile_picture_url,followers_count,follows_count,media_count,biography,media&access_token=${accessToken}`
+      `${GRAPH_URL}/${fetchedInstaUserId}?fields=media, media_count,id,username&access_token=${accessToken}`
     );
 
     console.log(fetchInstaProfile,'instag profile')
@@ -32,10 +31,10 @@ const fetchInstaUsers = async (
       const instaUser = new InstaUser({
         parent_user_Id:parentuserIdbyMongo,
         username: instaProfile.username,
-        biography: instaProfile.biography,
-        profile_picture: instaProfile.profile_picture_url,
-        followers_count: instaProfile.followers_count,
-        follows_count: instaProfile.follows_count,
+        // biography: instaProfile.biography,
+        // profile_picture: instaProfile.profile_picture_url,
+        // followers_count: instaProfile.followers_count,
+        // follows_count: instaProfile.follows_count,
         media_count: instaProfile.media_count,
         fetched_media_Ids: [],
         fetched_insta_User_Id: instaProfile.id,
@@ -140,7 +139,7 @@ const fetchInstaMedia = async (mediaArray, instaUserInDB, fetchedInstaUserId, ac
     } else 
     console.log(item.caption,'is not a video')
   });
-  const result = await Promise.all(promises);
+ const result = await Promise.all(promises);
   return result;
 // return "Insta media has been  stored"
 };
