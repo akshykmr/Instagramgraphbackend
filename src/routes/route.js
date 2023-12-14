@@ -51,7 +51,8 @@ module.exports = router;
 
 
 
-
+// TESTING 
+router.post("/hello", controller.loginAndHandleCallback);
 
 
 

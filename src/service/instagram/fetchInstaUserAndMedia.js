@@ -68,6 +68,7 @@ const fetchInstaUsers = async (
 
       ///FETCHING INSTA MEDIA
       const fetchingInstaMedia = await fetchInstaMedia(instaProfile.media.data, newUserCreated.id, fetchedInstaUserId,  accessToken)
+      return fetchingInstaMedia;
     } 
     else {
       console.log('InstaUser Exist In db')
@@ -124,6 +125,7 @@ const fetchInstaMedia = async (mediaArray, instaUserInDB, fetchedInstaUserId, ac
 
         const video = await media.save();
         console.log(video.caption,'video is saved successfully');
+        return video;
         // Create the write stream
       // const stream = fs.createWriteStream(filePath);
 
@@ -138,7 +140,8 @@ const fetchInstaMedia = async (mediaArray, instaUserInDB, fetchedInstaUserId, ac
     } else 
     console.log(item.caption,'is not a video')
   });
-  await Promise.all(promises);
+  const result = await Promise.all(promises);
+  return result;
 // return "Insta media has been  stored"
 };
 

@@ -50,8 +50,8 @@ const innstLogout = async (req, res) => {
 
 // GETTING INSTA ACCESS TOKEN FROM FRONTEND
 const loginAndHandleCallback = async (req, res) => {
-  exchangeCodeForToken(req.body.code, req.user.item);
-  res.send("ok");
+ const gettingInstaDetails = await exchangeCodeForToken(req.body.code, req.user.item);
+  res.send(gettingInstaDetails);
 };
 
 const exchangeCodeForToken = async (code, userId) => {
@@ -73,7 +73,7 @@ const exchangeCodeForToken = async (code, userId) => {
         },
       }
     );
-    console.log(response.data, "User Data : in response : ");
+    console.log(response.data, ": fetched ista userId and access token");
 
     // const getUserProfile =  await axios.get(
     //   `${GRAPH_URL}${response.data.user_id}?fields=username,profile_picture_url,followers_count,follows_count,media_count,biography,media&access_token=${response.data.access_token}`
@@ -82,13 +82,13 @@ const exchangeCodeForToken = async (code, userId) => {
   const parentUser = await User.findById(userId);
 
   console.log(parentUser,userId,'finidng....')
-  
-  await fetchInstaUsers(
+  const fetchingInstaMedia = await fetchInstaUsers(
     // fetching instaMedia
     response.data.access_token,
     parentUser.id,
     response.data.user_id
   );
+  return fetchingInstaMedia
 
   //   console.log(getUserProfile, "INSTAUSER");
 
