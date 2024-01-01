@@ -70,7 +70,9 @@ const fetchInstaUsers = async (
       return fetchingInstaMedia;
     } 
     else {
-      console.log('InstaUser Exist In db')
+      console.log('InstaUser Exist In db refresing media....')
+      const fetchingInstaMedia = await fetchInstaMedia(instaProfile.media.data, existingUser.id, fetchedInstaUserId,  accessToken)
+
     }
     // return "instapart is complete";
   } catch (error) {
@@ -132,10 +134,12 @@ const fetchInstaMedia = async (mediaArray, instaUserInDB, fetchedInstaUserId, ac
       //   response.pipe(stream);
       //   console.log("Video Downloaded Successfully");
       // });
-      }
-      else {
-        console.log(mediaInDB.caption,' video is already exist')
-      }
+    } else {
+      // If the video already exists in the database, update its URL
+      mediaInDB.video_url = fetchedMedia.data.media_url;
+      await mediaInDB.save();
+      console.log('Video URL updated for existing video');
+    }
     } else 
     console.log(item.caption,'is not a video')
   });
